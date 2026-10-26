@@ -14,11 +14,25 @@ dotenv.config()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
-const PORT = process.env.DASHBOARD_PORT || 4200
+const PORT = process.env.PORT || process.env.DASHBOARD_PORT || 4200
 
 app.use(cors())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
+
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'LeadPulse Agent API',
+    status: 'online',
+    version: '1.0.0',
+    dbConnected: mongoose.connection.readyState === 1,
+    timestamp: new Date().toISOString(),
+  })
+})
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() })
+})
 
 // Disable buffering so queries fail or return immediately if DB is offline instead of hanging
 mongoose.set('bufferCommands', false)

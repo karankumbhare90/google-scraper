@@ -40,6 +40,23 @@ export function formatWhatsAppLink(phone: string): string | null {
 }
 
 function getSystemBrowserPath(): string | null {
+  // Check explicit environment variable (Docker / Render Linux container)
+  if (process.env.PUPPETEER_EXECUTABLE_PATH && fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+    return process.env.PUPPETEER_EXECUTABLE_PATH
+  }
+
+  // Linux common paths
+  const linuxPaths = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+  ]
+  for (const p of linuxPaths) {
+    if (fs.existsSync(p)) return p
+  }
+
+  // Windows Edge / Chrome paths
   const paths = [
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -131,7 +148,13 @@ export async function scrapeGoogleMapsLeads(niche: string, city: string, maxLead
 
   const launchOptions: any = {
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+    ],
   }
   if (browserPath) {
     launchOptions.executablePath = browserPath
