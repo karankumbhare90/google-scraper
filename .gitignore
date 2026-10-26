@@ -1,57 +1,144 @@
+# ==============================================================================
+# Git Ignore Configuration - Google Scraper & Cold Outreach Agent
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
 # Dependencies
+# ------------------------------------------------------------------------------
 node_modules/
-client/node_modules/
 .pnp
 .pnp.js
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
 
+# ------------------------------------------------------------------------------
 # Environment Variables & Secrets (CRITICAL)
+# ------------------------------------------------------------------------------
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+# Ensure environment template is tracked
 !.env.example
 
-# Google Service Account Credentials & Private Keys
-mail-agent-510115-aa88ca0745d5.json
+# ------------------------------------------------------------------------------
+# Google Cloud Service Account Keys, OAuth Tokens & Private Certs
+# ------------------------------------------------------------------------------
 mail-agent-*.json
 *-service-account*.json
+*service-account*.json
+credentials.json
+client_secret*.json
+token.json
+tokens.json
+google-credentials*.json
+firebase-adminsdk*.json
 *.pem
 *.key
 *.cert
+*.crt
+*.pfx
+*.p12
 
-# Local Databases & Scraped Lead Spreadsheets
+# ------------------------------------------------------------------------------
+# Scraped Lead Databases, Spreadsheets & Local Storage
+# ------------------------------------------------------------------------------
 leads_database.xlsx
 *.xlsx
+*.xls
 *.csv
+*.tsv
+*.sqlite
+*.sqlite3
+*.db
+dump/
 
-# Build Outputs & Cache
-dist/
-build/
-client/dist/
-.vite/
-client/.vite/
-*.tsbuildinfo
-
-# Puppeteer browser cache
+# ------------------------------------------------------------------------------
+# Browser Automation (Puppeteer / Chrome / Chromium) & Scraper Dumps
+# ------------------------------------------------------------------------------
 .cache/
 puppeteer/
+.puppeteer/
+chrome-win/
+chrome-linux/
+chrome-mac/
+screenshots/
+downloads/
+har/
+temp/
+tmp/
+profile/
+chrome-profile/
 
-# Logs & Debugging
+# ------------------------------------------------------------------------------
+# Build Outputs & Compilation Caches
+# ------------------------------------------------------------------------------
+dist/
+dist-ssr/
+build/
+out/
+.vite/
+client/dist/
+client/.vite/
+*.tsbuildinfo
+.eslintcache
+
+# ------------------------------------------------------------------------------
+# Logs & Process Monitoring
+# ------------------------------------------------------------------------------
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Test / Scratch Files
+# ------------------------------------------------------------------------------
+# Scratch & Ad-hoc Local Test Scripts
+# ------------------------------------------------------------------------------
+scratch/
 test_*.js
 test_*.ts
+test-run*.js
+test-run*.ts
 
+# ------------------------------------------------------------------------------
 # Operating System & IDE Files
+# ------------------------------------------------------------------------------
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
 Thumbs.db
+Thumbs.db:encryptable
 ehthumbs.db
+ehthumbs_vista.db
 Desktop.ini
+$RECYCLE.BIN/
+
+# Editors & IDEs
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.sublime-workspace
+*.sublime-project
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 *.swp
 *.swo
+*.sw?
 *~
+*.bak

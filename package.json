@@ -5,6 +5,7 @@
   "main": "dashboard.ts",
   "type": "module",
   "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build",
     "backend": "node node_modules/tsx/dist/cli.mjs dashboard.ts",
     "frontend": "cd client && npm run dev",
     "dev": "start cmd /k \"node node_modules/tsx/dist/cli.mjs dashboard.ts\" && cd client && npm run dev"

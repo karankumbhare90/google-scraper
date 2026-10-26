@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import {
   X, Phone, MessageCircle, MapPin, Search, Copy, Check,
-  Globe, Mail, Trash2, ExternalLink, Building2
+  Mail, Trash2, ExternalLink, Building2
 } from 'lucide-react'
 import type { Lead } from '../types'
 import { updateLeadStatus, deleteLead } from '../services/api'
