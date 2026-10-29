@@ -1,6 +1,6 @@
 // ─── Filters Bar with Search Suggestions ────────────────────────────────────
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { Search, Download, Filter, X, Building, MapPin, Tag } from 'lucide-react'
+import { Search, Download, Filter, X, Building, MapPin, Tag, Trash2 } from 'lucide-react'
 
 interface SuggestionMatch {
   text: string
@@ -16,6 +16,9 @@ interface FiltersBarProps {
   onStrategy: (v: string) => void
   total: number
   onExport: () => void
+  selectedCount?: number
+  onDeleteSelected?: () => void
+  isDeletingSelected?: boolean
   suggestions?: {
     businesses?: string[]
     cities?: string[]
@@ -42,6 +45,9 @@ export function FiltersBar({
   onStrategy,
   total,
   onExport,
+  selectedCount = 0,
+  onDeleteSelected,
+  isDeletingSelected = false,
   suggestions = {},
 }: FiltersBarProps) {
   const [showDropdown, setShowDropdown] = useState(false)
@@ -259,7 +265,24 @@ export function FiltersBar({
       <div className="filters-meta">
         <div>
           <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{total}</span> leads
+          {selectedCount !== undefined && selectedCount > 0 && (
+            <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>
+              ({selectedCount} selected)
+            </span>
+          )}
         </div>
+
+        {selectedCount !== undefined && selectedCount > 0 && onDeleteSelected && (
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={onDeleteSelected}
+            disabled={isDeletingSelected}
+            title={`Delete ${selectedCount} selected leads`}
+          >
+            <Trash2 size={13} />
+            <span>{isDeletingSelected ? 'Deleting…' : `Delete (${selectedCount})`}</span>
+          </button>
+        )}
 
         <button
           className="btn btn-ghost btn-sm"

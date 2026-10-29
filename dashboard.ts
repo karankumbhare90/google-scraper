@@ -446,9 +446,26 @@ app.patch('/api/leads/:id', async (req, res) => {
 app.delete('/api/leads/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await LeadModel.findOneAndDelete({ id })
+    const query = mongoose.isValidObjectId(id)
+      ? { $or: [{ id }, { _id: id }] }
+      : { id }
+    const result = await LeadModel.findOneAndDelete(query)
     if (!result) return res.status(404).json({ success: false, error: 'Lead not found' })
     res.json({ success: true })
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+// POST /api/leads/batch-delete — delete multiple leads
+app.post('/api/leads/batch-delete', async (req, res) => {
+  try {
+    const { ids } = req.body
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, error: 'ids array is required' })
+    }
+    const result = await LeadModel.deleteMany({ id: { $in: ids } })
+    res.json({ success: true, deletedCount: result.deletedCount })
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message })
   }

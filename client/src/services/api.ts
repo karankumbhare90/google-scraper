@@ -33,6 +33,19 @@ export async function deleteLead(id: string): Promise<{ success: boolean }> {
   return request(`/leads/${id}`, { method: 'DELETE' })
 }
 
+export async function batchDeleteLeads(ids: string[]): Promise<{ success: boolean; deletedCount?: number }> {
+  try {
+    return await request('/leads/batch-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  } catch {
+    // Graceful fallback if batch endpoint is not yet restarted on remote backend
+    await Promise.all(ids.map((id) => deleteLead(id)))
+    return { success: true, deletedCount: ids.length }
+  }
+}
+
 export async function createLead(lead: Partial<Lead>): Promise<{ success: boolean; lead: Lead }> {
   return request('/leads', {
     method: 'POST',

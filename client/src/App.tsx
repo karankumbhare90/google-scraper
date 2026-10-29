@@ -3,7 +3,15 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import './index.css'
 
 import type { Lead, Stats, Toast, AgentStatus } from './types'
-import { fetchLeads, fetchStats, fetchAgentStatus, setAutoRun, runNow } from './services/api'
+import {
+  fetchLeads,
+  fetchStats,
+  fetchAgentStatus,
+  setAutoRun,
+  runNow,
+  deleteLead,
+  batchDeleteLeads,
+} from './services/api'
 
 import { Navbar }           from './components/Navbar'
 import { KpiSummary }       from './components/KpiSummary'
@@ -32,6 +40,10 @@ export default function App() {
   const [showJobModal, setShowJobModal]     = useState(false)
   const [selectedLead, setSelectedLead]     = useState<Lead | null>(null)
   const [toasts, setToasts]                 = useState<Toast[]>([])
+
+  const [deletingId, setDeletingId]         = useState<string | null>(null)
+  const [selectedIds, setSelectedIds]       = useState<string[]>([])
+  const [isDeletingBatch, setIsDeletingBatch] = useState(false)
 
   /* ── Toast helper ────────────────────────────────────────────────────────── */
   const addToast = useCallback((message: string, type: 'success' | 'error') => {
@@ -143,6 +155,60 @@ export default function App() {
     addToast(`Exported ${filtered.length} leads as CSV.`, 'success')
   }
 
+  /* ── Delete single lead ─────────────────────────────────────────────────── */
+  const handleDeleteLead = useCallback(async (lead: Lead) => {
+    if (!window.confirm(`Are you sure you want to delete "${lead.businessName}"? This action cannot be undone.`)) {
+      return
+    }
+    setDeletingId(lead.id)
+    try {
+      await deleteLead(lead.id)
+      setLeads((prev) => prev.filter((l) => l.id !== lead.id))
+      setSelectedIds((prev) => prev.filter((id) => id !== lead.id))
+      addToast(`🗑️ "${lead.businessName}" deleted.`, 'success')
+      fetchStats().then((res) => setStats(res.stats)).catch(() => {})
+    } catch (err: any) {
+      addToast(`Failed to delete lead: ${err.message}`, 'error')
+    } finally {
+      setDeletingId(null)
+    }
+  }, [addToast])
+
+  /* ── Selection & Batch Delete ───────────────────────────────────────────── */
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }, [])
+
+  const handleToggleSelectAll = useCallback(() => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(filtered.map((l) => l.id))
+    }
+  }, [filtered, selectedIds.length])
+
+  const handleBatchDelete = useCallback(async () => {
+    if (selectedIds.length === 0) return
+    const count = selectedIds.length
+    if (!window.confirm(`Are you sure you want to delete ${count} selected lead${count > 1 ? 's' : ''}? This cannot be undone.`)) {
+      return
+    }
+    setIsDeletingBatch(true)
+    try {
+      await batchDeleteLeads(selectedIds)
+      setLeads((prev) => prev.filter((l) => !selectedIds.includes(l.id)))
+      setSelectedIds([])
+      addToast(`🗑️ ${count} lead${count > 1 ? 's' : ''} deleted successfully.`, 'success')
+      fetchStats().then((res) => setStats(res.stats)).catch(() => {})
+    } catch (err: any) {
+      addToast(`Failed to delete selected leads: ${err.message}`, 'error')
+    } finally {
+      setIsDeletingBatch(false)
+    }
+  }, [addToast, selectedIds])
+
   /* ── Render ──────────────────────────────────────────────────────────────── */
   return (
     <>
@@ -205,6 +271,9 @@ export default function App() {
             onStrategy={setStrategyFilter}
             total={filtered.length}
             onExport={exportCsv}
+            selectedCount={selectedIds.length}
+            onDeleteSelected={handleBatchDelete}
+            isDeletingSelected={isDeletingBatch}
             suggestions={{
               businesses: existingBusinesses,
               cities: existingCities,
@@ -215,6 +284,11 @@ export default function App() {
             leads={filtered}
             loading={loading}
             onPitch={(lead) => setSelectedLead(lead)}
+            onDelete={handleDeleteLead}
+            deletingId={deletingId}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAll}
           />
         </div>
 
