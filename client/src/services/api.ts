@@ -7,13 +7,20 @@ const RAW_BASE = ((import.meta.env.VITE_API_URL as string | undefined) || '/api'
 const BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-    ...init,
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
-  return data as T
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+      ...init,
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+    return data as T
+  } catch (err: any) {
+    if (err.name === 'TypeError' && (err.message?.includes('fetch') || err.message?.includes('network'))) {
+      throw new Error('Backend is waking up (Render free tier takes ~30-45s). Please wait a moment and try again.')
+    }
+    throw err
+  }
 }
 
 /* ── Leads ────────────────────────────────────────────────────────────────── */
